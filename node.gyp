@@ -26,6 +26,8 @@
     'node_shared_sqlite%': 'false',
     'node_shared_temporal_capi%': 'false',
     'node_shared_uvwasi%': 'false',
+    'node_shared_v8%': 'false',
+    'node_shared_v8_libpath%': '',
     'node_shared_zlib%': 'false',
     'node_shared_zstd%': 'false',
     'node_shared%': 'false',
@@ -53,21 +55,27 @@
       '<@(linked_module_files)',
     ],
     'deps_files': [
-      'deps/v8/tools/splaytree.mjs',
-      'deps/v8/tools/codemap.mjs',
-      'deps/v8/tools/consarray.mjs',
-      'deps/v8/tools/csvparser.mjs',
-      'deps/v8/tools/profile.mjs',
-      'deps/v8/tools/profile_view.mjs',
-      'deps/v8/tools/logreader.mjs',
-      'deps/v8/tools/arguments.mjs',
-      'deps/v8/tools/tickprocessor.mjs',
-      'deps/v8/tools/sourcemap.mjs',
-      'deps/v8/tools/tickprocessor-driver.mjs',
       'deps/acorn/acorn/dist/acorn.js',
       'deps/acorn/acorn-walk/dist/walk.js',
       'deps/minimatch/index.js',
       '<@(node_builtin_shareable_builtins)',
+    ],
+    'conditions': [
+      ['node_shared_v8=="false"', {
+        'deps_files': [
+          'deps/v8/tools/splaytree.mjs',
+          'deps/v8/tools/codemap.mjs',
+          'deps/v8/tools/consarray.mjs',
+          'deps/v8/tools/csvparser.mjs',
+          'deps/v8/tools/profile.mjs',
+          'deps/v8/tools/profile_view.mjs',
+          'deps/v8/tools/logreader.mjs',
+          'deps/v8/tools/arguments.mjs',
+          'deps/v8/tools/tickprocessor.mjs',
+          'deps/v8/tools/sourcemap.mjs',
+          'deps/v8/tools/tickprocessor-driver.mjs',
+        ]
+      }],
     ],
     'node_sources': [
       'src/api/async_resource.cc',
@@ -579,8 +587,12 @@
 
       'include_dirs': [
         'src',
-        'deps/v8/include',
         'deps/postject'
+      ],
+      'conditions': [
+        ['node_shared_v8=="false"', {
+          'include_dirs': ['deps/v8/include'],
+        }],
       ],
 
       'sources': [
@@ -895,20 +907,27 @@
         '<(SHARED_INTERMEDIATE_DIR)' # for node_natives.h
       ],
       'dependencies': [
-        'tools/v8_gypfiles/abseil.gyp:abseil',
         'node_js2c#host',
+      ],
+      'conditions': [
+        ['node_shared_v8=="false"', {
+          'dependencies': ['tools/v8_gypfiles/abseil.gyp:abseil'],
+        }],
       ],
 
       'sources': [
         '<@(node_sources)',
-        # Dependency headers
-        'deps/v8/include/v8.h',
         'deps/postject/postject-api.h',
         # javascript files to make for an even more pleasant IDE experience
         '<@(library_files)',
         '<@(deps_files)',
         # node.gyp is added by default, common.gypi is added for change detection
         'common.gypi',
+      ],
+      'conditions': [
+        ['node_shared_v8=="false"', {
+          'sources': ['deps/v8/include/v8.h'],
+        }],
       ],
 
       'variables': {
@@ -955,6 +974,9 @@
           'sources': [
             'src/node_snapshot_stub.cc',
           ]
+        }],
+        [ 'node_use_bundled_v8!="false"', {
+          'dependencies': [ 'tools/v8_gypfiles/abseil.gyp:abseil' ],
         }],
         [ 'node_shared_gtest=="false"', {
           'dependencies': [
@@ -1128,10 +1150,14 @@
       'include_dirs': [
         'src',
         'tools/msvs/genfiles',
-        'deps/v8/include',
         'deps/cares/include',
         'deps/uv/include',
         'test/cctest',
+      ],
+      'conditions': [
+        ['node_shared_v8=="false"', {
+          'include_dirs': ['deps/v8/include'],
+        }],
       ],
 
       'defines': [
@@ -1174,10 +1200,14 @@
       'include_dirs': [
         'src',
         'tools/msvs/genfiles',
-        'deps/v8/include',
         'deps/cares/include',
         'deps/uv/include',
         'test/cctest',
+      ],
+      'conditions': [
+        ['node_shared_v8=="false"', {
+          'include_dirs': ['deps/v8/include'],
+        }],
       ],
       'defines': [
         'NODE_ARCH="<(target_arch)"',
@@ -1223,10 +1253,14 @@
       'include_dirs': [
         'src',
         'tools/msvs/genfiles',
-        'deps/v8/include',
         'deps/cares/include',
         'deps/uv/include',
         'test/cctest',
+      ],
+      'conditions': [
+        ['node_shared_v8=="false"', {
+          'include_dirs': ['deps/v8/include'],
+        }],
       ],
       'defines': [
         'NODE_ARCH="<(target_arch)"',
@@ -1276,7 +1310,11 @@
 
       'dependencies': [
         '<(node_lib_target_name)',
-        'tools/v8_gypfiles/abseil.gyp:abseil',
+      ],
+      'conditions': [
+        ['node_shared_v8=="false"', {
+          'dependencies': ['tools/v8_gypfiles/abseil.gyp:abseil'],
+        }],
       ],
 
       'includes': [
@@ -1286,10 +1324,14 @@
       'include_dirs': [
         'src',
         'tools/msvs/genfiles',
-        'deps/v8/include',
         'deps/cares/include',
         'deps/uv/include',
         'test/cctest',
+      ],
+      'conditions': [
+        ['node_shared_v8=="false"', {
+          'include_dirs': ['deps/v8/include'],
+        }],
       ],
 
       'defines': [
@@ -1309,6 +1351,9 @@
         }],
         [ 'node_shared_gtest=="true"', {
           'libraries': [ '-lgtest_main' ],
+        }],
+        [ 'node_use_bundled_v8!="false"', {
+          'dependencies': [ 'tools/v8_gypfiles/abseil.gyp:abseil' ],
         }],
         [ 'node_shared_hdr_histogram=="false"', {
           'dependencies': [
@@ -1397,10 +1442,14 @@
         'src',
         'tools',
         'tools/msvs/genfiles',
-        'deps/v8/include',
         'deps/cares/include',
         'deps/uv/include',
         'test/embedding',
+      ],
+      'conditions': [
+        ['node_shared_v8=="false"', {
+          'include_dirs': ['deps/v8/include'],
+        }],
       ],
 
       'sources': [
@@ -1455,8 +1504,10 @@
 
       # Don't depend on node.gypi - it otherwise links to
       # the static libraries and resolve symbols at build time.
-      'include_dirs': [
-        'deps/v8/include',
+      'conditions': [
+        ['node_shared_v8=="false"', {
+          'include_dirs': ['deps/v8/include'],
+        }],
       ],
 
       'sources': [
@@ -1548,7 +1599,7 @@
         [ 'OS=="mac"', {
           'libraries': [ '-framework CoreFoundation -framework Security' ],
         }],
-        [ 'node_shared_simdutf=="false"', {
+        [ 'node_shared_simdutf=="false" and node_use_bundled_v8!="false"', {
           'dependencies': [ 'tools/v8_gypfiles/v8.gyp:simdutf#host' ],
         }],
         [ 'node_shared_libuv=="false"', {
@@ -1584,9 +1635,13 @@
       'include_dirs': [
         'src',
         'tools/msvs/genfiles',
-        'deps/v8/include',
         'deps/cares/include',
         'deps/uv/include',
+      ],
+      'conditions': [
+        ['node_shared_v8=="false"', {
+          'include_dirs': ['deps/v8/include'],
+        }],
       ],
 
       'defines': [ 'NODE_WANT_INTERNALS=1' ],
@@ -1645,6 +1700,9 @@
         ['enable_lto=="true"', {
           'ldflags': [ '-fno-lto' ],
         }],
+        ['node_shared_v8=="true" and OS!="win" and node_shared_v8_libpath!=""', {
+          'ldflags': ['-Wl,-rpath,<(node_shared_v8_libpath)'],
+        }],
       ],
     }, # node_mksnapshot
   ], # end targets
@@ -1664,7 +1722,11 @@
           'dependencies': ['<(node_lib_target_name)'],
           'include_dirs': [
             'src',
-            'deps/v8/include',
+          ],
+          'conditions': [
+            ['node_shared_v8=="false"', {
+              'include_dirs': ['deps/v8/include'],
+            }],
           ],
           'sources': [
             '<@(library_files)',
